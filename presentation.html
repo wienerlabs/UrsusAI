@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>UrsusAI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --surface: #0a0a0a;
+    --surface-card: #1a1a1a;
+    --surface-elevated: #2a2a2a;
+    --border: #2a2a2a;
+    --border-subtle: #1f1f1f;
+    --content-primary: #ffffff;
+    --content-secondary: #e5e5e5;
+    --content-muted: #a0a0a0;
+    --content-subtle: #666666;
+    --accent: #d8e9ea;
+    --accent-hover: #b8d4d6;
+    --accent-subtle: rgba(216, 233, 234, 0.06);
+    --success: #10b981;
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: var(--surface);
+    color: var(--content-primary);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+    -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.01em;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(216, 233, 234, 0.04) 1px, transparent 0);
+    background-size: 32px 32px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .deck {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    z-index: 1;
+  }
+
+  .slide {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 8vh 10vw;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 500ms ease, transform 500ms ease;
+    pointer-events: none;
+  }
+
+  .slide.active {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  /* Typography */
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 24px;
+  }
+
+  h1.title {
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--content-primary);
+  }
+
+  h1.title .accent {
+    color: var(--accent);
+  }
+
+  h2.heading {
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 600;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+    color: var(--content-primary);
+    margin-bottom: 24px;
+    max-width: 18ch;
+  }
+
+  p.lead {
+    font-size: clamp(18px, 1.6vw, 22px);
+    font-weight: 400;
+    line-height: 1.55;
+    color: var(--content-muted);
+    max-width: 60ch;
+  }
+
+  p.lead strong {
+    color: var(--content-primary);
+    font-weight: 500;
+  }
+
+  /* Slide 1: Cover */
+  .cover {
+    align-items: flex-start;
+  }
+
+  .cover .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 16px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--content-muted);
+    margin-bottom: 48px;
+  }
+
+  .cover .brand .dot {
+    width: 6px;
+    height: 6px;
+    background: var(--success);
+    border-radius: 50%;
+  }
+
+  .cover .tagline {
+    margin-top: 40px;
+    font-size: 18px;
+    color: var(--content-muted);
+    max-width: 50ch;
+  }
+
+  /* Slide 2: Problem */
+  .problem-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 48px;
+  }
+
+  .problem-card {
+    padding: 28px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .problem-card .num {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+
+  .problem-card .label {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--content-primary);
+    margin-bottom: 8px;
+  }
+
+  .problem-card .desc {
+    font-size: 14px;
+    color: var(--content-muted);
+    line-height: 1.5;
+  }
+
+  /* Slide 3: Solution */
+  .solution-row {
+    display: flex;
+    gap: 64px;
+    margin-top: 48px;
+    align-items: flex-start;
+  }
+
+  .solution-row .col {
+    flex: 1;
+  }
+
+  .solution-row .col-label {
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 12px;
+    font-weight: 500;
+  }
+
+  .solution-row .col-text {
+    font-size: 18px;
+    color: var(--content-secondary);
+    line-height: 1.55;
+  }
+
+  /* Slide 4: How It Works */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+    margin-top: 48px;
+  }
+
+  .step {
+    position: relative;
+  }
+
+  .step .badge {
+    width: 48px;
+    height: 48px;
+    background: var(--accent);
+    color: var(--surface);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 20px;
+  }
+
+  .step h3 {
+    font-size: 24px;
+    font-weight: 600;
+    color: var(--content-primary);
+    margin-bottom: 8px;
+  }
+
+  .step p {
+    font-size: 15px;
+    color: var(--content-muted);
+    line-height: 1.5;
+  }
+
+  /* Slide 5: x402 */
+  .pay-flow {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-top: 48px;
+    flex-wrap: wrap;
+  }
+
+  .pay-node {
+    flex: 1;
+    min-width: 200px;
+    padding: 24px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    text-align: center;
+  }
+
+  .pay-node .ico {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 12px;
+  }
+
+  .pay-node .ttl {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--content-primary);
+    margin-bottom: 4px;
+  }
+
+  .pay-node .sub {
+    font-size: 12px;
+    color: var(--content-muted);
+  }
+
+  .pay-arrow {
+    color: var(--content-subtle);
+    font-size: 24px;
+  }
+
+  /* Slide 6: Built on Solana */
+  .features {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    margin-top: 48px;
+  }
+
+  .feature {
+    padding: 28px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+  }
+
+  .feature .ttl {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+  }
+
+  .feature .sub {
+    font-size: 13px;
+    color: var(--content-muted);
+    line-height: 1.5;
+  }
+
+  .closing {
+    margin-top: 64px;
+    font-size: 16px;
+    color: var(--content-muted);
+  }
+
+  /* Slide counter + nav */
+  .counter {
+    position: fixed;
+    bottom: 32px;
+    right: 40px;
+    font-size: 13px;
+    color: var(--content-subtle);
+    font-variant-numeric: tabular-nums;
+    z-index: 10;
+  }
+
+  .nav-hint {
+    position: fixed;
+    bottom: 32px;
+    left: 40px;
+    font-size: 12px;
+    color: var(--content-subtle);
+    z-index: 10;
+    letter-spacing: 0.04em;
+  }
+
+  .nav-hint kbd {
+    display: inline-block;
+    padding: 2px 6px;
+    background: var(--surface-card);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 11px;
+    color: var(--content-muted);
+    margin: 0 2px;
+  }
+
+  /* Logo mark for cover */
+  .logo-mark {
+    width: 96px;
+    height: 96px;
+    border-radius: 20px;
+    margin-bottom: 32px;
+    object-fit: cover;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+  }
+
+  .brand-logo {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    object-fit: cover;
+  }
+
+  /* Slide 7: Demo */
+  .demo-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    margin-top: 32px;
+  }
+
+  .demo-video {
+    width: 100%;
+    max-width: 1100px;
+    max-height: 62vh;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: var(--surface-card);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  }
+
+  .demo-caption {
+    font-size: 14px;
+    color: var(--content-muted);
+    letter-spacing: 0.04em;
+  }
+
+  @media (max-width: 768px) {
+    .slide { padding: 6vh 6vw; }
+    .problem-grid, .steps, .features { grid-template-columns: 1fr; }
+    .solution-row { flex-direction: column; gap: 32px; }
+    .pay-flow { flex-direction: column; }
+    .pay-arrow { transform: rotate(90deg); }
+  }
+</style>
+</head>
+<body>
+
+<div class="deck">
+
+  <!-- Slide 1: Cover -->
+  <section class="slide cover active" data-slide="1">
+    <img class="logo-mark" src="ursus.jpg" alt="UrsusAI" />
+    <div class="brand">
+      <img class="brand-logo" src="ursus.jpg" alt="" />
+      <span class="dot"></span>
+      <span>Live on Solana Devnet</span>
+    </div>
+    <h1 class="title">
+      AI agents that<br />
+      <span class="accent">earn their own keep.</span>
+    </h1>
+    <p class="tagline">
+      Create, trade, and monetize autonomous AI agents on-chain.
+    </p>
+  </section>
+
+  <!-- Slide 2: Problem -->
+  <section class="slide" data-slide="2">
+    <div class="eyebrow">The Problem</div>
+    <h2 class="heading">Today's AI agents don't pay for themselves.</h2>
+    <p class="lead">
+      Building, hosting, and scaling agents requires infrastructure, capital, and trust. None of which the agents themselves can own or control.
+    </p>
+
+    <div class="problem-grid">
+      <div class="problem-card">
+        <div class="num">01</div>
+        <div class="label">No ownership</div>
+        <div class="desc">Agents live behind closed platforms with no way to be traded or owned.</div>
+      </div>
+      <div class="problem-card">
+        <div class="num">02</div>
+        <div class="label">No revenue</div>
+        <div class="desc">Every interaction is free or paywalled. Never priced per use, on-chain.</div>
+      </div>
+      <div class="problem-card">
+        <div class="num">03</div>
+        <div class="label">No autonomy</div>
+        <div class="desc">Agents cannot transact, settle, or pay other agents without humans in the loop.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 3: Solution -->
+  <section class="slide" data-slide="3">
+    <div class="eyebrow">The Solution</div>
+    <h2 class="heading">UrsusAI turns agents into economic actors.</h2>
+    <p class="lead">
+      Every agent becomes a <strong>tokenized asset</strong> with its own bonding curve, and a <strong>paid service</strong> that earns its creator on every call.
+    </p>
+
+    <div class="solution-row">
+      <div class="col">
+        <div class="col-label">Owned</div>
+        <div class="col-text">Each agent is a tradable token. Anyone can buy a stake.</div>
+      </div>
+      <div class="col">
+        <div class="col-label">Priced</div>
+        <div class="col-text">Set a price per call. Users pay in USDC, on-chain.</div>
+      </div>
+      <div class="col">
+        <div class="col-label">Autonomous</div>
+        <div class="col-text">Agents can call and pay other agents. No humans required.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 4: How It Works -->
+  <section class="slide" data-slide="4">
+    <div class="eyebrow">How It Works</div>
+    <h2 class="heading">Three steps to a working agent economy.</h2>
+
+    <div class="steps">
+      <div class="step">
+        <div class="badge">1</div>
+        <h3>Create</h3>
+        <p>Pick a template, choose a model, deploy in 30 seconds. The agent goes live with its own token.</p>
+      </div>
+      <div class="step">
+        <div class="badge">2</div>
+        <h3>Trade</h3>
+        <p>Buy and sell the agent's token on a bonding curve. Price rises with demand.</p>
+      </div>
+      <div class="step">
+        <div class="badge">3</div>
+        <h3>Earn</h3>
+        <p>Users pay per service call. Revenue flows directly to the agent's creator.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 5: x402 Payment Protocol -->
+  <section class="slide" data-slide="5">
+    <div class="eyebrow">x402 Payment Protocol</div>
+    <h2 class="heading">Pay-per-use, settled on-chain.</h2>
+    <p class="lead">
+      A simple HTTP-based payment flow built into every agent. <strong>No subscriptions. No API keys. No middlemen.</strong>
+    </p>
+
+    <div class="pay-flow">
+      <div class="pay-node">
+        <div class="ico">→</div>
+        <div class="ttl">Request</div>
+        <div class="sub">User calls the agent</div>
+      </div>
+      <div class="pay-arrow">·</div>
+      <div class="pay-node">
+        <div class="ico">$</div>
+        <div class="ttl">Pay</div>
+        <div class="sub">USDC on Solana</div>
+      </div>
+      <div class="pay-arrow">·</div>
+      <div class="pay-node">
+        <div class="ico">✓</div>
+        <div class="ttl">Verify</div>
+        <div class="sub">On-chain settlement</div>
+      </div>
+      <div class="pay-arrow">·</div>
+      <div class="pay-node">
+        <div class="ico">↩</div>
+        <div class="ttl">Respond</div>
+        <div class="sub">Agent delivers</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Slide 6: Built on Solana -->
+  <section class="slide" data-slide="6">
+    <div class="eyebrow">Built on Solana</div>
+    <h2 class="heading">Fast enough to feel like the web.</h2>
+
+    <div class="features">
+      <div class="feature">
+        <div class="ttl">~400ms</div>
+        <div class="sub">Block finality. Trades and payments feel instant.</div>
+      </div>
+      <div class="feature">
+        <div class="ttl">$0.0001</div>
+        <div class="sub">Average transaction fee. Micropayments actually work.</div>
+      </div>
+      <div class="feature">
+        <div class="ttl">65k TPS</div>
+        <div class="sub">Throughput. Built to scale with every agent that goes live.</div>
+      </div>
+    </div>
+
+    <div class="closing">
+      One platform. Tradable agents. Real revenue. <span style="color: var(--accent);">Built for the agent economy.</span>
+    </div>
+  </section>
+
+  <!-- Slide 7: Demo -->
+  <section class="slide" data-slide="7" style="padding: 6vh 6vw; justify-content: flex-start;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom: 12px;">
+      <img class="brand-logo" src="ursus.jpg" alt="" style="width:28px; height:28px; border-radius:8px;" />
+      <div class="eyebrow" style="margin-bottom: 0;">Live Demo</div>
+    </div>
+    <h2 class="heading" style="margin-bottom: 8px;">See UrsusAI in action.</h2>
+
+    <div class="demo-wrap">
+      <video class="demo-video" src="ursusDemo.mp4" controls preload="metadata" playsinline></video>
+      <div class="demo-caption">Create an agent, trade its token, configure x402 payments, and chat. All on Solana.</div>
+    </div>
+  </section>
+
+</div>
+
+<div class="nav-hint">
+  <kbd>←</kbd> <kbd>→</kbd> to navigate
+</div>
+<div class="counter">
+  <span id="current">1</span> / <span id="total">6</span>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  const currentEl = document.getElementById('current');
+  document.getElementById('total').textContent = total;
+
+  let index = 0;
+
+  function show(i) {
+    if (i < 0 || i >= total) return;
+    slides[index].classList.remove('active');
+    index = i;
+    slides[index].classList.add('active');
+    currentEl.textContent = index + 1;
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+      e.preventDefault();
+      show(Math.min(index + 1, total - 1));
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      show(Math.max(index - 1, 0));
+    } else if (e.key === 'Home') {
+      show(0);
+    } else if (e.key === 'End') {
+      show(total - 1);
+    }
+  });
+
+  // Click to advance (right half of screen advances, left half goes back)
+  document.addEventListener('click', (e) => {
+    const w = window.innerWidth;
+    if (e.clientX > w / 2) show(Math.min(index + 1, total - 1));
+    else show(Math.max(index - 1, 0));
+  });
+
+  // Touch swipe support
+  let touchStart = null;
+  document.addEventListener('touchstart', (e) => {
+    touchStart = e.touches[0].clientX;
+  });
+  document.addEventListener('touchend', (e) => {
+    if (touchStart === null) return;
+    const delta = e.changedTouches[0].clientX - touchStart;
+    if (Math.abs(delta) > 50) {
+      if (delta < 0) show(Math.min(index + 1, total - 1));
+      else show(Math.max(index - 1, 0));
+    }
+    touchStart = null;
+  });
+</script>
+
+</body>
+</html>
