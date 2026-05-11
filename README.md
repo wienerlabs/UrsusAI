@@ -27,7 +27,6 @@
 - [Project Structure](#-project-structure)
 - [Solana Smart Contracts](#-solana-smart-contracts)
 - [API Documentation](#-api-documentation)
-- [Team](#-team)
 - [License](#-license)
 
 ---
@@ -344,18 +343,6 @@ ws.send(JSON.stringify({
 - priceUpdate
 - statsUpdate
 ```
-
----
-
-## 👥 Team
-
-<div align="center">
-
-![Team](https://github.com/user-attachments/assets/af7fd1bc-eccb-4333-8170-97336180f8aa)
-
-**Building the future of AI x DeFi on Solana**
-
-</div>
 
 ---
 
